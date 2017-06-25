@@ -1,0 +1,35 @@
+version: '3'
+services:
+
+  traefik:
+    image: traefik
+    command: -c /dev/null --web --docker --docker.watch --docker.domain=localhost --logLevel=INFO 
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  shop:
+    build: shop-web
+    image: cs02rm0/shop
+    labels:
+      - "traefik.backend=shop"
+      - "traefik.frontend.rule=PathPrefix:/"
+      - "traefik.port=8080"
+
+  stock:
+    build: stock-web
+    image: cs02rm0/stock
+    networks:
+      default:
+        aliases:
+          - stock.internal
+
+  portainer:
+    image: portainer/portainer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 9000:9000
+
